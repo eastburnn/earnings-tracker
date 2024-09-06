@@ -58,14 +58,27 @@
     }
 
     .overtime-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       margin-top: -10px;
     }
+
+    .overtime-section label {
+      margin-right: 10px;
+    }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Real-time Earnings Tracker</h1>
-    <p>Enter your hourly wage and any one-time bonus payments below:</p>
+    <p>Enter your starting amount, hourly wage, and any one-time bonus payments below:</p>
+
+    <!-- Input for Starting Amount -->
+    <div>
+      <input type="number" id="startingAmount" placeholder="Starting amount" value="0" />
+    </div>
 
     <!-- Input for Hourly Wage -->
     <div>
@@ -74,8 +87,8 @@
 
     <!-- Overtime Section -->
     <div class="overtime-section">
-      <input type="radio" id="overtimeToggle" name="overtime" onclick="toggleOvertime()" />
-      <label for="overtimeToggle">Overtime</label>
+      <label for="overtimeToggle">Overtime:</label>
+      <input type="checkbox" id="overtimeToggle" onclick="toggleOvertime()" />
       <input type="number" id="overtimeMultiplier" placeholder="Overtime multiplier" disabled />
     </div>
 
@@ -105,20 +118,39 @@
     let totalBonus = 0;  // Store total bonus
     let isOvertime = false;
     let overtimeMultiplier = 1;
+    let startingAmount = 0; // Static starting amount
 
     function toggleOvertime() {
       const overtimeInput = document.getElementById('overtimeMultiplier');
       if (document.getElementById('overtimeToggle').checked) {
         overtimeInput.disabled = false;
+        updateWageWithOvertime();  // Update wage immediately when checked
       } else {
         overtimeInput.disabled = true;
         overtimeMultiplier = 1;
         overtimeInput.value = '';
+        updateWageWithOvertime();  // Reset wage when unchecked
+      }
+    }
+
+    function updateWageWithOvertime() {
+      const wage = parseFloat(document.getElementById('wage').value);
+      const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
+      
+      if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
+
+      overtimeMultiplier = document.getElementById('overtimeToggle').checked && multiplier > 1 ? multiplier : 1;
+      wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage with overtime multiplier
+
+      if (!timerActive) {
+        updateEarnings();  // Update immediately if not running
       }
     }
 
     function startTracking() {
       const wage = parseFloat(document.getElementById('wage').value);
+      startingAmount = parseFloat(document.getElementById('startingAmount').value) || 0;  // Static starting amount
+
       if (isNaN(wage) || wage <= 0) {
         alert('Please enter a valid hourly wage.');
         return;
@@ -126,15 +158,7 @@
 
       if (timerActive) return;
 
-      // Apply overtime multiplier if applicable
-      if (document.getElementById('overtimeToggle').checked) {
-        const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
-        if (!isNaN(multiplier) && multiplier > 1) {
-          overtimeMultiplier = multiplier;
-        }
-      }
-
-      wagePerSecond = (wage * overtimeMultiplier) / 3600;
+      updateWageWithOvertime();  // Ensure wage per second is updated with overtime
       startTime = Date.now() - elapsedTime;  // Account for any previous time
       timerActive = true;
       updateEarnings();
@@ -175,7 +199,7 @@
         totalBonus += bonusInput;  // Add to total bonus
         document.getElementById('bonus').value = '';  // Clear input field
         if (!timerActive) {
-          document.getElementById('earnings').innerHTML = `$${totalBonus.toFixed(2)}`;
+          document.getElementById('earnings').innerHTML = `$${(totalBonus + startingAmount).toFixed(2)}`;
         }
       }
     }
@@ -185,7 +209,7 @@
 
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - startTime) / 1000;
-      const earned = (elapsedSeconds * wagePerSecond + totalBonus).toFixed(2);
+      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
       document.getElementById('earnings').innerHTML = `$${earned}`;
 
       requestID = requestAnimationFrame(updateEarnings);  // Continue updating
