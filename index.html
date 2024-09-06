@@ -257,7 +257,7 @@
         totalBonus += bonusInput;  // Add to total bonus
         document.getElementById('bonus').value = '';  // Clear input field
         if (!timerActive) {
-          document.getElementById('earnings').innerHTML = $${(totalBonus + startingAmount).toFixed(2)};
+          document.getElementById('earnings').innerHTML = `$${(totalBonus + startingAmount).toFixed(2)}`;
         }
       }
     }
@@ -268,7 +268,7 @@
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - startTime) / 1000;
       const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
-      document.getElementById('earnings').innerHTML = $${earned};
+      document.getElementById('earnings').innerHTML = `$${earned}`;
 
       requestID = requestAnimationFrame(updateEarnings);  // Continue updating
     }
