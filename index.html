@@ -82,6 +82,9 @@
       font-size: 16px;
       margin-left: 10px;
       cursor: pointer;
+      background-color: lightgray;
+      border: none;
+      color: black;
     }
 
     .container button {
@@ -126,14 +129,9 @@
 
     <div class="divider"></div>
 
-    <!-- Section 2: Overtime and One-time Bonus -->
+    <!-- Section 2: Overtime Multiplier and One-time Bonus -->
     <div class="input-section">
-      <label for="overtimeToggle">Overtime:</label>
-      <input type="checkbox" id="overtimeToggle" onclick="toggleOvertime()" />
-    </div>
-
-    <div class="input-section">
-      <label for="overtimeMultiplier">Multiplier:</label>
+      <label for="overtimeMultiplier">Overtime Multiplier:</label>
       <div class="input-multiplier">
         <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
         <button id="toggleMultiplier" onclick="toggleMultiplier()">Enable/Disable</button>
@@ -173,20 +171,20 @@
     let startingAmount = 0; // Static starting amount
     let multiplierEnabled = false;  // Track if the multiplier is enabled
 
-    function toggleOvertime() {
-      const overtimeInput = document.getElementById('overtimeMultiplier');
-      if (document.getElementById('overtimeToggle').checked) {
-        overtimeInput.disabled = false;
-      } else {
-        overtimeInput.disabled = true;
-        overtimeMultiplier = 1;
-        overtimeInput.value = '';
-      }
-      updateWageWithOvertime();  // Update wage immediately when toggled
-    }
-
     function toggleMultiplier() {
+      const multiplierButton = document.getElementById('toggleMultiplier');
       multiplierEnabled = !multiplierEnabled;  // Toggle multiplier state
+
+      if (multiplierEnabled) {
+        multiplierButton.style.backgroundColor = 'green';
+        multiplierButton.style.color = 'white';
+        document.getElementById('overtimeMultiplier').disabled = false;
+      } else {
+        multiplierButton.style.backgroundColor = 'lightgray';
+        multiplierButton.style.color = 'black';
+        document.getElementById('overtimeMultiplier').disabled = true;
+      }
+
       updateWageWithOvertime();  // Update wage immediately when toggled
     }
 
