@@ -170,6 +170,7 @@
     let overtimeMultiplier = 1;
     let startingAmount = 0; // Static starting amount
     let multiplierEnabled = false;  // Track if the multiplier is enabled
+    let overtimeEarned = 0;  // Track the amount earned during overtime
 
     function toggleMultiplier() {
       const multiplierButton = document.getElementById('toggleMultiplier');
@@ -195,6 +196,8 @@
       if (multiplierEnabled && multiplier > 1) {
         overtimeMultiplier = multiplier;
       } else {
+        // When overtime is disabled, accumulate overtime earnings to keep them in the total.
+        overtimeEarned += (Date.now() - startTime) / 1000 * (wagePerSecond * (overtimeMultiplier - 1));
         overtimeMultiplier = 1;
       }
 
@@ -241,6 +244,7 @@
       timerActive = false;
       elapsedTime = 0;
       totalBonus = 0;
+      overtimeEarned = 0;
       document.getElementById('bonus').value = '';
       document.getElementById('earnings').innerHTML = '$0.00';
       cancelAnimationFrame(requestID);  // Stop any ongoing updates
@@ -257,7 +261,7 @@
         totalBonus += bonusInput;  // Add to total bonus
         document.getElementById('bonus').value = '';  // Clear input field
         if (!timerActive) {
-          document.getElementById('earnings').innerHTML = `$${(totalBonus + startingAmount).toFixed(2)}`;
+          document.getElementById('earnings').innerHTML = `$${(totalBonus + startingAmount + overtimeEarned).toFixed(2)}`;
         }
       }
     }
@@ -267,7 +271,7 @@
 
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - startTime) / 1000;
-      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
+      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount + overtimeEarned).toFixed(2);
       document.getElementById('earnings').innerHTML = `$${earned}`;
 
       requestID = requestAnimationFrame(updateEarnings);  // Continue updating
