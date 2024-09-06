@@ -28,11 +28,16 @@
       margin-bottom: 20px;
     }
 
+    .container label {
+      display: inline-block;
+      margin-right: 10px;
+    }
+
     .container input {
       padding: 10px;
       font-size: 16px;
       margin-bottom: 20px;
-      width: 200px;
+      width: 150px;
       color: black;
     }
 
@@ -53,7 +58,7 @@
       color: green;
     }
 
-    .bonus-section, .overtime-section {
+    .bonus-section, .overtime-section, .starting-section {
       margin-bottom: 20px;
     }
 
@@ -61,40 +66,45 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: -10px;
     }
 
-    .overtime-section label {
-      margin-right: 10px;
+    .overtime-section label, .starting-section label, .bonus-section label {
+      margin-right: 5px;
     }
 
+    #overtimeMultiplier {
+      width: 80px; /* Reduced the width of the multiplier field */
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Real-time Earnings Tracker</h1>
-    <p>Enter your starting amount, hourly wage, and any one-time bonus payments below:</p>
 
     <!-- Input for Starting Amount -->
-    <div>
-      <input type="number" id="startingAmount" placeholder="Starting amount" value="0" />
+    <div class="starting-section">
+      <label for="startingAmount">Starting Amount Earned:</label>
+      <input type="number" id="startingAmount" placeholder="$0.00" />
     </div>
 
     <!-- Input for Hourly Wage -->
     <div>
-      <input type="number" id="wage" placeholder="Hourly wage" />
+      <label for="wage">Hourly Wage:</label>
+      <input type="number" id="wage" placeholder="$25.00" />
     </div>
 
     <!-- Overtime Section -->
     <div class="overtime-section">
       <label for="overtimeToggle">Overtime:</label>
       <input type="checkbox" id="overtimeToggle" onclick="toggleOvertime()" />
-      <input type="number" id="overtimeMultiplier" placeholder="Overtime multiplier" disabled />
+      <label for="overtimeMultiplier">Multiplier:</label>
+      <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
     </div>
 
     <!-- Bonus Section -->
     <div class="bonus-section">
-      <input type="number" id="bonus" placeholder="One-time bonus" />
+      <label for="bonus">One-time Bonus:</label>
+      <input type="number" id="bonus" placeholder="$100.00" />
       <button onclick="addBonus()">Add</button>
     </div>
 
