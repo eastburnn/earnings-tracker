@@ -166,12 +166,11 @@
     let timerActive = false;
     let requestID;
     let totalBonus = 0;  // Store total bonus
-    let isOvertime = false;
-    let overtimeMultiplier = 1;
+    let overtimeMultiplier = 1;  // Default multiplier
+    let totalOvertimeEarnings = 0;  // Store overtime earnings only during overtime
     let startingAmount = 0; // Static starting amount
     let multiplierEnabled = false;  // Track if the multiplier is enabled
-    let totalOvertimeEarnings = 0;  // Total amount earned during overtime
-    let lastUpdateTime = 0;  // Tracks last time earnings were updated
+    let lastUpdateTime = 0;  // Track the last update time
 
     function toggleMultiplier() {
       const multiplierButton = document.getElementById('toggleMultiplier');
@@ -180,41 +179,21 @@
       if (multiplierEnabled) {
         multiplierButton.style.backgroundColor = 'green';
         multiplierButton.style.color = 'white';
+        overtimeMultiplier = parseFloat(document.getElementById('overtimeMultiplier').value) || 1;
       } else {
         multiplierButton.style.backgroundColor = 'lightgray';
         multiplierButton.style.color = 'black';
-        // Store the overtime earnings accrued before disabling overtime
-        accumulateOvertimeEarnings();
+        overtimeMultiplier = 1;  // Reset to 1 when disabled
       }
 
+      lastUpdateTime = Date.now();  // Reset last update time when toggling
       updateWageWithOvertime();  // Update wage immediately when toggled
-    }
-
-    function accumulateOvertimeEarnings() {
-      const wage = parseFloat(document.getElementById('wage').value);
-      const elapsedSeconds = (Date.now() - lastUpdateTime) / 1000;
-
-      if (multiplierEnabled) {
-        // Add the overtime earnings accrued before disabling overtime
-        totalOvertimeEarnings += elapsedSeconds * wagePerSecond * (overtimeMultiplier - 1);
-      }
-
-      lastUpdateTime = Date.now();  // Update the last time earnings were updated
     }
 
     function updateWageWithOvertime() {
       const wage = parseFloat(document.getElementById('wage').value);
-      const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
-      
       if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
-
-      if (multiplierEnabled && multiplier > 1) {
-        overtimeMultiplier = multiplier;
-      } else {
-        overtimeMultiplier = 1;  // Reset to 1 when overtime is disabled
-      }
-
-      wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage with or without overtime
+      wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage per second based on multiplier
 
       if (!timerActive) {
         updateEarnings();  // Update immediately if not running
@@ -245,7 +224,6 @@
     }
 
     function stopTracking() {
-      accumulateOvertimeEarnings();  // Accumulate overtime earnings before stopping
       timerActive = false;
       elapsedTime = Date.now() - startTime;
       cancelAnimationFrame(requestID);  // Stop the animation
@@ -287,6 +265,7 @@
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - lastUpdateTime) / 1000;
 
+      // Calculate overtime earnings only when overtime is enabled
       if (multiplierEnabled) {
         totalOvertimeEarnings += elapsedSeconds * wagePerSecond * (overtimeMultiplier - 1);
       }
