@@ -4,18 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Earnings Tracker</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .container h1 {
+      margin-bottom: 20px;
+    }
+
+    .container input {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      width: 200px;
+    }
+
+    .container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .container p {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Real-time Earnings Tracker</h1>
-  <p>Enter your hourly wage below to track your earnings in real time!</p>
-  <input type="number" id="wage" placeholder="Hourly wage" />
-  <button onclick="startTracking()">Start Tracking</button>
-  <h2>Amount Earned So Far:</h2>
-  <p id="earnings">$0.00</p>
+  <div class="container">
+    <h1>Real-time Earnings Tracker</h1>
+    <p>Enter your hourly wage below to track your earnings in real time!</p>
+
+    <!-- Input for Hourly Wage -->
+    <input type="number" id="wage" placeholder="Hourly wage" />
+
+    <!-- Start, Stop, and Reset buttons -->
+    <div>
+      <button id="startButton" onclick="startTracking()">Start</button>
+      <button id="stopButton" onclick="stopTracking()" disabled>Stop</button>
+      <button id="resetButton" onclick="resetTracking()">Reset</button>
+    </div>
+
+    <h2>Amount Earned So Far:</h2>
+    <p id="earnings">$0.00</p>
+  </div>
 
   <script>
     let wagePerSecond;
     let startTime;
+    let elapsedTime = 0;
+    let timerActive = false;
+    let requestID;
 
     function startTracking() {
       const wage = parseFloat(document.getElementById('wage').value);
@@ -23,18 +79,54 @@
         alert('Please enter a valid hourly wage.');
         return;
       }
+      
+      // If already running, don't start again
+      if (timerActive) return;
+
       wagePerSecond = wage / 3600;
-      startTime = Date.now();
+      startTime = Date.now() - elapsedTime;  // Account for any previous time
+      timerActive = true;
       updateEarnings();
+      
+      // Enable stop button and disable start button
+      document.getElementById('startButton').disabled = true;
+      document.getElementById('stopButton').disabled = false;
+      document.getElementById('resetButton').disabled = false;
+    }
+
+    function stopTracking() {
+      timerActive = false;
+      elapsedTime = Date.now() - startTime;
+      cancelAnimationFrame(requestID);  // Stop the animation
+
+      // Enable start button and disable stop button
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+    }
+
+    function resetTracking() {
+      timerActive = false;
+      elapsedTime = 0;
+      document.getElementById('earnings').innerHTML = '$0.00';
+      cancelAnimationFrame(requestID);  // Stop any ongoing updates
+
+      // Enable start button and disable stop and reset buttons
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+      document.getElementById('resetButton').disabled = true;
     }
 
     function updateEarnings() {
+      if (!timerActive) return;  // Only update if tracking is active
+
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - startTime) / 1000;
       const earned = (elapsedSeconds * wagePerSecond).toFixed(2);
       document.getElementById('earnings').innerHTML = `$${earned}`;
-      requestAnimationFrame(updateEarnings);
+      
+      requestID = requestAnimationFrame(updateEarnings);  // Continue updating
     }
   </script>
 </body>
 </html>
+
