@@ -168,8 +168,10 @@
     let totalBonus = 0;  // Store total bonus
     let isOvertime = false;
     let overtimeMultiplier = 1;
+    let totalOvertimeEarnings = 0;  // Store overtime earnings
     let startingAmount = 0; // Static starting amount
     let multiplierEnabled = false;  // Track if the multiplier is enabled
+    let lastUpdateTime = 0;  // Track the last update time
 
     function toggleMultiplier() {
       const multiplierButton = document.getElementById('toggleMultiplier');
@@ -178,11 +180,13 @@
       if (multiplierEnabled) {
         multiplierButton.style.backgroundColor = 'green';
         multiplierButton.style.color = 'white';
+        overtimeMultiplier = parseFloat(document.getElementById('overtimeMultiplier').value) || 1;
       } else {
         multiplierButton.style.backgroundColor = 'lightgray';
         multiplierButton.style.color = 'black';
       }
 
+      lastUpdateTime = Date.now();  // Reset last update time when toggling
       updateWageWithOvertime();  // Update wage immediately when toggled
     }
 
@@ -191,7 +195,8 @@
       const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
       
       if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
-
+      wagePerSecond = wage / 3600;  // Base wage per second without overtime
+      
       if (multiplierEnabled && multiplier > 1) {
         overtimeMultiplier = multiplier;
       } else {
@@ -263,14 +268,21 @@
     }
 
     function updateEarnings() {
-      if (!timerActive) return;  // Only update if tracking is active
+      if (!timerActive) return;
 
       const currentTime = Date.now();
-      const elapsedSeconds = (currentTime - startTime) / 1000;
-      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
+      const elapsedSeconds = (currentTime - lastUpdateTime) / 1000;
+
+      // Accumulate overtime earnings only when multiplier is enabled
+      if (multiplierEnabled) {
+        totalOvertimeEarnings += elapsedSeconds * wagePerSecond * (overtimeMultiplier - 1);
+      }
+
+      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount + totalOvertimeEarnings).toFixed(2);
       document.getElementById('earnings').innerHTML = `$${earned}`;
 
-      requestID = requestAnimationFrame(updateEarnings);  // Continue updating
+      lastUpdateTime = currentTime;
+      requestID = requestAnimationFrame(updateEarnings);
     }
   </script>
 </body>
