@@ -133,7 +133,7 @@
     <div class="input-section">
       <label for="overtimeMultiplier">Overtime Multiplier:</label>
       <div class="input-multiplier">
-        <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
+        <input type="number" id="overtimeMultiplier" placeholder="1.50" />
         <button id="toggleMultiplier" onclick="toggleMultiplier()">Enable/Disable</button>
       </div>
     </div>
@@ -178,11 +178,9 @@
       if (multiplierEnabled) {
         multiplierButton.style.backgroundColor = 'green';
         multiplierButton.style.color = 'white';
-        document.getElementById('overtimeMultiplier').disabled = false;
       } else {
         multiplierButton.style.backgroundColor = 'lightgray';
         multiplierButton.style.color = 'black';
-        document.getElementById('overtimeMultiplier').disabled = true;
       }
 
       updateWageWithOvertime();  // Update wage immediately when toggled
