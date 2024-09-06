@@ -13,7 +13,283 @@
       font-family: Arial, sans-serif;
       background-color: black;
       color: white;
+      margin: 0;<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings Tracker</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: black;
+      color: white;
       margin: 0;
+    }
+
+    .container {
+      background-color: #333;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
+      width: 500px;
+    }
+
+    .container h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .input-section label {
+      width: 180px; /* Align labels to the left */
+      text-align: left;
+    }
+
+    .input-section input {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px; /* Ensure inputs are the same width */
+      color: black;
+    }
+
+    .input-bonus {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .input-bonus input {
+      width: 190px; /* Widen the bonus input field */
+    }
+
+    .input-bonus button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .input-multiplier {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .input-multiplier input {
+      width: 140px; /* Shrink the multiplier input field */
+    }
+
+    .input-multiplier button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+      background-color: lightgray;
+      border: none;
+      color: black;
+    }
+
+    .container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .container p {
+      font-size: 24px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .earnings {
+      font-weight: bold;
+      color: green;
+    }
+
+    .divider {
+      border-bottom: 1px solid white;
+      margin: 20px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Real-time Earnings Tracker</h1>
+
+    <!-- Section 1: Starting Amount and Hourly Wage -->
+    <div class="input-section">
+      <label for="startingAmount">Starting Amount Earned:</label>
+      <input type="number" id="startingAmount" placeholder="$0.00" />
+    </div>
+
+    <div class="input-section">
+      <label for="wage">Hourly Wage:</label>
+      <input type="number" id="wage" placeholder="$25.00" />
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 2: Overtime Multiplier and One-time Bonus -->
+    <div class="input-section">
+      <label for="overtimeMultiplier">Overtime Multiplier:</label>
+      <div class="input-multiplier">
+        <input type="number" id="overtimeMultiplier" placeholder="1.50" />
+        <button id="toggleMultiplier" onclick="toggleMultiplier()">Enable/Disable</button>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <label for="bonus">One-time Bonus:</label>
+      <div class="input-bonus">
+        <input type="number" id="bonus" placeholder="$100.00" />
+        <button onclick="addBonus()">Add</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 3: Start, Stop, Reset buttons and Earnings -->
+    <div style="text-align: center;">
+      <button id="startButton" onclick="startTracking()">Start</button>
+      <button id="stopButton" onclick="stopTracking()" disabled>Stop</button>
+      <button id="resetButton" onclick="resetTracking()">Reset</button>
+    </div>
+
+    <h2 style="text-align: center;">Amount Earned So Far:</h2>
+    <p id="earnings" class="earnings">$0.00</p>
+  </div>
+
+  <script>
+    let wagePerSecond;
+    let startTime;
+    let elapsedTime = 0;
+    let timerActive = false;
+    let requestID;
+    let totalBonus = 0;  // Store total bonus
+    let isOvertime = false;
+    let overtimeMultiplier = 1;
+    let startingAmount = 0; // Static starting amount
+    let multiplierEnabled = false;  // Track if the multiplier is enabled
+
+    function toggleMultiplier() {
+      const multiplierButton = document.getElementById('toggleMultiplier');
+      multiplierEnabled = !multiplierEnabled;  // Toggle multiplier state
+
+      if (multiplierEnabled) {
+        multiplierButton.style.backgroundColor = 'green';
+        multiplierButton.style.color = 'white';
+      } else {
+        multiplierButton.style.backgroundColor = 'lightgray';
+        multiplierButton.style.color = 'black';
+      }
+
+      updateWageWithOvertime();  // Update wage immediately when toggled
+    }
+
+    function updateWageWithOvertime() {
+      const wage = parseFloat(document.getElementById('wage').value);
+      const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
+      
+      if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
+
+      if (multiplierEnabled && multiplier > 1) {
+        overtimeMultiplier = multiplier;
+      } else {
+        overtimeMultiplier = 1;
+      }
+
+      wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage with overtime multiplier
+
+      if (!timerActive) {
+        updateEarnings();  // Update immediately if not running
+      }
+    }
+
+    function startTracking() {
+      const wage = parseFloat(document.getElementById('wage').value);
+      startingAmount = parseFloat(document.getElementById('startingAmount').value) || 0;  // Static starting amount
+
+      if (isNaN(wage) || wage <= 0) {
+        alert('Please enter a valid hourly wage.');
+        return;
+      }
+
+      if (timerActive) return;
+
+      updateWageWithOvertime();  // Ensure wage per second is updated with overtime
+      startTime = Date.now() - elapsedTime;  // Account for any previous time
+      timerActive = true;
+      updateEarnings();
+
+      // Enable stop button and disable start button
+      document.getElementById('startButton').disabled = true;
+      document.getElementById('stopButton').disabled = false;
+      document.getElementById('resetButton').disabled = false;
+    }
+
+    function stopTracking() {
+      timerActive = false;
+      elapsedTime = Date.now() - startTime;
+      cancelAnimationFrame(requestID);  // Stop the animation
+
+      // Enable start button and disable stop button
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+    }
+
+    function resetTracking() {
+      timerActive = false;
+      elapsedTime = 0;
+      totalBonus = 0;
+      document.getElementById('bonus').value = '';
+      document.getElementById('earnings').innerHTML = '$0.00';
+      cancelAnimationFrame(requestID);  // Stop any ongoing updates
+
+      // Enable start button and disable stop and reset buttons
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+      document.getElementById('resetButton').disabled = true;
+    }
+
+    function addBonus() {
+      const bonusInput = parseFloat(document.getElementById('bonus').value);
+      if (!isNaN(bonusInput) && bonusInput > 0) {
+        totalBonus += bonusInput;  // Add to total bonus
+        document.getElementById('bonus').value = '';  // Clear input field
+        if (!timerActive) {
+          document.getElementById('earnings').innerHTML = $${(totalBonus + startingAmount).toFixed(2)};
+        }
+      }
+    }
+
+    function updateEarnings() {
+      if (!timerActive) return;  // Only update if tracking is active
+
+      const currentTime = Date.now();
+      const elapsedSeconds = (currentTime - startTime) / 1000;
+      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
+      document.getElementById('earnings').innerHTML = $${earned};
+
+      requestID = requestAnimationFrame(updateEarnings);  // Continue updating
+    }
+  </script>
+</body>
+</html>
     }
 
     .container {
