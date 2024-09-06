@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings Tracker</title>
+</head>
+<body>
+  <h1>Real-time Earnings Tracker</h1>
+  <p>Enter your hourly wage below to track your earnings in real time!</p>
+  <input type="number" id="wage" placeholder="Hourly wage" />
+  <button onclick="startTracking()">Start Tracking</button>
+  <h2>Amount Earned So Far:</h2>
+  <p id="earnings">$0.00</p>
+
+  <script>
+    let wagePerSecond;
+    let startTime;
+
+    function startTracking() {
+      const wage = parseFloat(document.getElementById('wage').value);
+      if (isNaN(wage) || wage <= 0) {
+        alert('Please enter a valid hourly wage.');
+        return;
+      }
+      wagePerSecond = wage / 3600;
+      startTime = Date.now();
+      updateEarnings();
+    }
+
+    function updateEarnings() {
+      const currentTime = Date.now();
+      const elapsedSeconds = (currentTime - startTime) / 1000;
+      const earned = (elapsedSeconds * wagePerSecond).toFixed(2);
+      document.getElementById('earnings').innerHTML = `$${earned}`;
+      requestAnimationFrame(updateEarnings);
+    }
+  </script>
+</body>
+</html>
