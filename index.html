@@ -21,7 +21,7 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
-      width: 420px;
+      width: 500px;
     }
 
     .container h1 {
@@ -56,10 +56,28 @@
     }
 
     .input-bonus input {
-      width: 140px; /* Shrink the bonus input field */
+      width: 190px; /* Widen the bonus input field */
     }
 
     .input-bonus button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .input-multiplier {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .input-multiplier input {
+      width: 140px; /* Shrink the multiplier input field */
+    }
+
+    .input-multiplier button {
       padding: 10px 15px;
       font-size: 16px;
       margin-left: 10px;
@@ -89,9 +107,6 @@
       margin: 20px 0;
     }
 
-    #overtimeMultiplier {
-      width: 200px;
-    }
   </style>
 </head>
 <body>
@@ -119,7 +134,10 @@
 
     <div class="input-section">
       <label for="overtimeMultiplier">Multiplier:</label>
-      <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
+      <div class="input-multiplier">
+        <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
+        <button id="toggleMultiplier" onclick="toggleMultiplier()">Enable/Disable</button>
+      </div>
     </div>
 
     <div class="input-section">
@@ -153,18 +171,23 @@
     let isOvertime = false;
     let overtimeMultiplier = 1;
     let startingAmount = 0; // Static starting amount
+    let multiplierEnabled = false;  // Track if the multiplier is enabled
 
     function toggleOvertime() {
       const overtimeInput = document.getElementById('overtimeMultiplier');
       if (document.getElementById('overtimeToggle').checked) {
         overtimeInput.disabled = false;
-        updateWageWithOvertime();  // Update wage immediately when checked
       } else {
         overtimeInput.disabled = true;
         overtimeMultiplier = 1;
         overtimeInput.value = '';
-        updateWageWithOvertime();  // Reset wage when unchecked
       }
+      updateWageWithOvertime();  // Update wage immediately when toggled
+    }
+
+    function toggleMultiplier() {
+      multiplierEnabled = !multiplierEnabled;  // Toggle multiplier state
+      updateWageWithOvertime();  // Update wage immediately when toggled
     }
 
     function updateWageWithOvertime() {
@@ -173,7 +196,12 @@
       
       if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
 
-      overtimeMultiplier = document.getElementById('overtimeToggle').checked && multiplier > 1 ? multiplier : 1;
+      if (multiplierEnabled && multiplier > 1) {
+        overtimeMultiplier = multiplier;
+      } else {
+        overtimeMultiplier = 1;
+      }
+
       wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage with overtime multiplier
 
       if (!timerActive) {
