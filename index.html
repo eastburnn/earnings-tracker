@@ -21,6 +21,7 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
+      width: 420px;
     }
 
     .container h1 {
@@ -33,19 +34,36 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      width: 400px; /* Make this wide enough for the labels and input to align */
     }
 
     .input-section label {
-      width: 200px; /* Align labels to the left */
+      width: 180px; /* Align labels to the left */
       text-align: left;
     }
 
     .input-section input {
       padding: 10px;
       font-size: 16px;
-      width: 100%; /* Make all input fields the same width */
+      width: 200px; /* Ensure inputs are the same width */
       color: black;
+    }
+
+    .input-bonus {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .input-bonus input {
+      width: 140px; /* Shrink the bonus input field */
+    }
+
+    .input-bonus button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
     }
 
     .container button {
@@ -66,14 +84,13 @@
       color: green;
     }
 
-    .overtime-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .divider {
+      border-bottom: 1px solid white;
+      margin: 20px 0;
     }
 
     #overtimeMultiplier {
-      width: 100%; /* Ensure the multiplier input field is the same width */
+      width: 200px;
     }
   </style>
 </head>
@@ -81,19 +98,20 @@
   <div class="container">
     <h1>Real-time Earnings Tracker</h1>
 
-    <!-- Input for Starting Amount -->
+    <!-- Section 1: Starting Amount and Hourly Wage -->
     <div class="input-section">
       <label for="startingAmount">Starting Amount Earned:</label>
       <input type="number" id="startingAmount" placeholder="$0.00" />
     </div>
 
-    <!-- Input for Hourly Wage -->
     <div class="input-section">
       <label for="wage">Hourly Wage:</label>
       <input type="number" id="wage" placeholder="$25.00" />
     </div>
 
-    <!-- Overtime Section -->
+    <div class="divider"></div>
+
+    <!-- Section 2: Overtime and One-time Bonus -->
     <div class="input-section">
       <label for="overtimeToggle">Overtime:</label>
       <input type="checkbox" id="overtimeToggle" onclick="toggleOvertime()" />
@@ -104,23 +122,24 @@
       <input type="number" id="overtimeMultiplier" placeholder="1.50" disabled />
     </div>
 
-    <!-- Bonus Section -->
     <div class="input-section">
       <label for="bonus">One-time Bonus:</label>
-      <input type="number" id="bonus" placeholder="$100.00" />
-    </div>
-    <div class="input-section">
-      <button onclick="addBonus()">Add</button>
+      <div class="input-bonus">
+        <input type="number" id="bonus" placeholder="$100.00" />
+        <button onclick="addBonus()">Add</button>
+      </div>
     </div>
 
-    <!-- Start, Stop, and Reset buttons -->
+    <div class="divider"></div>
+
+    <!-- Section 3: Start, Stop, Reset buttons and Earnings -->
     <div style="text-align: center;">
       <button id="startButton" onclick="startTracking()">Start</button>
       <button id="stopButton" onclick="stopTracking()" disabled>Stop</button>
       <button id="resetButton" onclick="resetTracking()">Reset</button>
     </div>
 
-    <h2>Amount Earned So Far:</h2>
+    <h2 style="text-align: center;">Amount Earned So Far:</h2>
     <p id="earnings" class="earnings">$0.00</p>
   </div>
 
