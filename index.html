@@ -52,6 +52,14 @@
       font-weight: bold;
       color: green;
     }
+
+    .bonus-section, .overtime-section {
+      margin-bottom: 20px;
+    }
+
+    .overtime-section {
+      margin-top: -10px;
+    }
   </style>
 </head>
 <body>
@@ -60,10 +68,22 @@
     <p>Enter your hourly wage and any one-time bonus payments below:</p>
 
     <!-- Input for Hourly Wage -->
-    <input type="number" id="wage" placeholder="Hourly wage" />
+    <div>
+      <input type="number" id="wage" placeholder="Hourly wage" />
+    </div>
 
-    <!-- Input for Bonus -->
-    <input type="number" id="bonus" placeholder="One-time bonus" oninput="updateBonus()" />
+    <!-- Overtime Section -->
+    <div class="overtime-section">
+      <input type="radio" id="overtimeToggle" name="overtime" onclick="toggleOvertime()" />
+      <label for="overtimeToggle">Overtime</label>
+      <input type="number" id="overtimeMultiplier" placeholder="Overtime multiplier" disabled />
+    </div>
+
+    <!-- Bonus Section -->
+    <div class="bonus-section">
+      <input type="number" id="bonus" placeholder="One-time bonus" />
+      <button onclick="addBonus()">Add</button>
+    </div>
 
     <!-- Start, Stop, and Reset buttons -->
     <div>
@@ -82,7 +102,20 @@
     let elapsedTime = 0;
     let timerActive = false;
     let requestID;
-    let bonus = 0;  // Added bonus variable
+    let totalBonus = 0;  // Store total bonus
+    let isOvertime = false;
+    let overtimeMultiplier = 1;
+
+    function toggleOvertime() {
+      const overtimeInput = document.getElementById('overtimeMultiplier');
+      if (document.getElementById('overtimeToggle').checked) {
+        overtimeInput.disabled = false;
+      } else {
+        overtimeInput.disabled = true;
+        overtimeMultiplier = 1;
+        overtimeInput.value = '';
+      }
+    }
 
     function startTracking() {
       const wage = parseFloat(document.getElementById('wage').value);
@@ -90,15 +123,22 @@
         alert('Please enter a valid hourly wage.');
         return;
       }
-      
-      // If already running, don't start again
+
       if (timerActive) return;
 
-      wagePerSecond = wage / 3600;
+      // Apply overtime multiplier if applicable
+      if (document.getElementById('overtimeToggle').checked) {
+        const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
+        if (!isNaN(multiplier) && multiplier > 1) {
+          overtimeMultiplier = multiplier;
+        }
+      }
+
+      wagePerSecond = (wage * overtimeMultiplier) / 3600;
       startTime = Date.now() - elapsedTime;  // Account for any previous time
       timerActive = true;
       updateEarnings();
-      
+
       // Enable stop button and disable start button
       document.getElementById('startButton').disabled = true;
       document.getElementById('stopButton').disabled = false;
@@ -118,7 +158,7 @@
     function resetTracking() {
       timerActive = false;
       elapsedTime = 0;
-      bonus = 0;
+      totalBonus = 0;
       document.getElementById('bonus').value = '';
       document.getElementById('earnings').innerHTML = '$0.00';
       cancelAnimationFrame(requestID);  // Stop any ongoing updates
@@ -129,11 +169,14 @@
       document.getElementById('resetButton').disabled = true;
     }
 
-    function updateBonus() {
+    function addBonus() {
       const bonusInput = parseFloat(document.getElementById('bonus').value);
-      bonus = isNaN(bonusInput) ? 0 : bonusInput;  // Update bonus amount
-      if (!timerActive) {
-        document.getElementById('earnings').innerHTML = `$${bonus.toFixed(2)}`;
+      if (!isNaN(bonusInput) && bonusInput > 0) {
+        totalBonus += bonusInput;  // Add to total bonus
+        document.getElementById('bonus').value = '';  // Clear input field
+        if (!timerActive) {
+          document.getElementById('earnings').innerHTML = `$${totalBonus.toFixed(2)}`;
+        }
       }
     }
 
@@ -142,9 +185,9 @@
 
       const currentTime = Date.now();
       const elapsedSeconds = (currentTime - startTime) / 1000;
-      const earned = (elapsedSeconds * wagePerSecond + bonus).toFixed(2);
+      const earned = (elapsedSeconds * wagePerSecond + totalBonus).toFixed(2);
       document.getElementById('earnings').innerHTML = `$${earned}`;
-      
+
       requestID = requestAnimationFrame(updateEarnings);  // Continue updating
     }
   </script>
