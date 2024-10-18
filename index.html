@@ -148,38 +148,34 @@
 
         /* Mobile-friendly adjustments */
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-                margin: 10px;
-            }
-            h1 {
-                font-size: 24px;
-            }
             .input-group, .overtime-controls {
-                flex-direction: column;
-                align-items: stretch;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                margin: 10px 0;
             }
             .input-group label, .overtime-controls label {
-                margin-right: 0;
-                margin-bottom: 5px;
-                text-align: left;
+                margin-right: 5px;
+                flex: 0 0 auto;
             }
             .input-group input, .overtime-controls input {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 5px;
+                width: 80px;
+                height: 30px;
+                padding: 4px;
+                font-size: 14px;
+                margin-right: 5px;
             }
             #overtimeToggle, #addBonusBtn {
-                width: 100%;
-            }
-            .button-group button {
-                width: calc(50% - 10px);
-            }
-            #earnings {
-                font-size: 28px;
+                width: auto;
+                padding: 5px 10px;
+                font-size: 14px;
+                margin-left: 5px;
             }
             .overtime-controls-wrapper {
-                padding-left: 0;
+                padding-left: 10px;
+            }
+            .overtime-section {
+                padding: 15px;
             }
         }
     </style>
@@ -224,7 +220,149 @@
     </div>
 
     <script>
-        // JavaScript remains unchanged
+        let earnings = 0;
+        let timer = null;
+        let isRunning = false;
+        let isOvertimeEnabled = false;
+        let baseHourlyRate = 0;
+        let startTime = null;
+        let accumulatedTime = 0;
+        let hasStartedOnce = false;
+        let hasStoppedOnce = false;
+
+        const startingAmountInput = document.getElementById('startingAmount');
+        const hourlyRateInput = document.getElementById('hourlyRate');
+        const overtimeMultiplierInput = document.getElementById('overtimeMultiplier');
+        const overtimeToggle = document.getElementById('overtimeToggle');
+        const oneTimeBonusInput = document.getElementById('oneTimeBonus');
+        const addBonusBtn = document.getElementById('addBonusBtn');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const earningsDisplay = document.getElementById('earnings');
+
+        function formatCurrency(value) {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return '';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(numValue);
+        }
+
+        [startingAmountInput, hourlyRateInput, oneTimeBonusInput, overtimeMultiplierInput].forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const numValue = parseFloat(this.value);
+                    if (!isNaN(numValue)) {
+                        this.value = numValue.toFixed(2);
+                        this.placeholder = formatCurrency(numValue);
+                    }
+                }
+            });
+        });
+
+        function getEffectiveHourlyRate() {
+            const baseRate = parseFloat(hourlyRateInput.value);
+            if (isOvertimeEnabled) {
+                const multiplier = parseFloat(overtimeMultiplierInput.value) || 1;
+                return baseRate * multiplier;
+            }
+            return baseRate;
+        }
+
+        function updateEarnings() {
+            const effectiveHourlyRate = getEffectiveHourlyRate();
+            const perSecond = effectiveHourlyRate / 3600;
+            earnings += perSecond;
+            earningsDisplay.textContent = formatCurrency(earnings);
+        }
+
+        overtimeToggle.addEventListener('click', () => {
+            if (!overtimeMultiplierInput.value || isNaN(overtimeMultiplierInput.value) || overtimeMultiplierInput.value < 1) {
+                alert('Please enter a valid multiplier (minimum 1)');
+                return;
+            }
+            isOvertimeEnabled = !isOvertimeEnabled;
+            overtimeToggle.textContent = isOvertimeEnabled ? 'Disable' : 'Enable';
+            overtimeToggle.style.backgroundColor = isOvertimeEnabled ? '#ff4444' : '#444';
+            overtimeMultiplierInput.disabled = isOvertimeEnabled;
+        });
+
+        addBonusBtn.addEventListener('click', () => {
+            const bonusAmount = parseFloat(oneTimeBonusInput.value);
+            if (!isNaN(bonusAmount) && bonusAmount > 0) {
+                earnings += bonusAmount;
+                earningsDisplay.textContent = formatCurrency(earnings);
+                oneTimeBonusInput.value = '';
+            } else {
+                alert('Please enter a valid bonus amount.');
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!hourlyRateInput.value || isNaN(hourlyRateInput.value) || hourlyRateInput.value <= 0) {
+                alert('Please enter a valid hourly rate');
+                return;
+            }
+            
+            if (!hasStartedOnce) {
+                const startingAmount = parseFloat(startingAmountInput.value) || 0;
+                earnings = startingAmount;
+                hasStartedOnce = true;
+            }
+            
+            isRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            hourlyRateInput.disabled = true;
+            startingAmountInput.disabled = true;
+            startTime = Date.now() - (accumulatedTime * 1000);
+            
+            timer = setInterval(updateEarnings, 1000);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            clearInterval(timer);
+            accumulatedTime = (Date.now() - startTime) / 1000;
+            
+            hourlyRateInput.disabled = false;
+            startingAmountInput.disabled = false;
+
+            if (!hasStoppedOnce) {
+                startBtn.textContent = 'Resume';
+                hasStoppedOnce = true;
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            earnings = 0;
+            accumulatedTime = 0;
+            isOvertimeEnabled = false;
+            hasStartedOnce = false;
+            hasStoppedOnce = false;
+            clearInterval(timer);
+            timer = null;
+            earningsDisplay.textContent = formatCurrency(0);
+            hourlyRateInput.value = '';
+            startingAmountInput.value = '';
+            overtimeMultiplierInput.value = '';
+            oneTimeBonusInput.value = '';
+            overtimeMultiplierInput.disabled = false;
+            overtimeToggle.textContent = 'Enable';
+            overtimeToggle.style.backgroundColor = '#444';
+            hourlyRateInput.disabled = false;
+            startingAmountInput.disabled = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.textContent = 'Start';
+        });
     </script>
 </body>
 </html>
