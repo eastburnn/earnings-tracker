@@ -1,277 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earnings Tracker</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      background-color: black;
-      color: white;
-      margin: 0;
-    }
-
-    .container {
-      background-color: #333;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
-      width: 500px;
-    }
-
-    .container h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .input-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .input-section label {
-      width: 180px; /* Align labels to the left */
-      text-align: left;
-    }
-
-    .input-section input {
-      padding: 10px;
-      font-size: 16px;
-      width: 200px; /* Ensure inputs are the same width */
-      color: black;
-    }
-
-    .input-bonus {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .input-bonus input {
-      width: 190px; /* Widen the bonus input field */
-    }
-
-    .input-bonus button {
-      padding: 10px 15px;
-      font-size: 16px;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    .input-multiplier {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .input-multiplier input {
-      width: 140px; /* Shrink the multiplier input field */
-    }
-
-    .input-multiplier button {
-      padding: 10px 15px;
-      font-size: 16px;
-      margin-left: 10px;
-      cursor: pointer;
-      background-color: lightgray;
-      border: none;
-      color: black;
-    }
-
-    .container button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      cursor: pointer;
-    }
-
-    .container p {
-      font-size: 24px;
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .earnings {
-      font-weight: bold;
-      color: green;
-    }
-
-    .divider {
-      border-bottom: 1px solid white;
-      margin: 20px 0;
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Earnings Tracker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .input-group {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .input-group label {
+            margin-right: 10px;
+        }
+        .input-group input, .overtime-controls input {
+            padding: 8px;
+            font-size: 16px;
+            background-color: #333;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            height: 35px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .input-group input {
+            width: 100px;
+        }
+        .overtime-controls input {
+            width: 100px;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #444;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        button:disabled {
+            background-color: #2a2a2a;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #555;
+        }
+        #earnings {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #4CAF50;
+        }
+        .overtime-section {
+            border: 1px solid #444;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #222;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .overtime-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .overtime-controls label {
+            flex: 0 0 150px;
+            text-align: left;
+        }
+        #overtimeToggle, #addBonusBtn {
+            flex: 0 0 100px;
+            margin-left: 10px;
+        }
+        .animation-container {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2a2a2a;
+            border-radius: 50%;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .hovering-dollar {
+            font-size: 36px;
+            color: #4CAF50;
+            position: absolute;
+            top: 55%;
+            left: 51%;
+            transform: translate(-50%, -50%);
+            animation: hover 2s ease-in-out infinite;
+        }
+        @keyframes hover {
+            0%, 100% {
+                transform: translate(-50%, -50%);
+            }
+            50% {
+                transform: translate(-50%, calc(-50% - 10px));
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
     <h1>Real-time Earnings Tracker</h1>
-
-    <!-- Section 1: Starting Amount and Hourly Wage -->
-    <div class="input-section">
-      <label for="startingAmount">Starting Amount Earned:</label>
-      <input type="number" id="startingAmount" placeholder="$0.00" />
+    
+    <div class="input-group">
+        <label for="hourlyRate">Enter your hourly rate:</label>
+        <input type="number" id="hourlyRate" min="0" step="0.01" placeholder="$25.00">
     </div>
 
-    <div class="input-section">
-      <label for="wage">Hourly Wage:</label>
-      <input type="number" id="wage" placeholder="$25.00" />
+    <div class="overtime-section">
+        <div class="overtime-controls">
+            <label for="startingAmount">Starting Amount:</label>
+            <input type="number" id="startingAmount" min="0" step="0.01" placeholder="$0.00">
+        </div>
+        <div class="overtime-controls">
+            <label for="overtimeMultiplier">Overtime Multiplier:</label>
+            <input type="number" id="overtimeMultiplier" min="1" step="0.1" placeholder="1.5">
+            <button id="overtimeToggle">Enable</button>
+        </div>
+        <div class="overtime-controls">
+            <label for="oneTimeBonus">One-time Bonus:</label>
+            <input type="number" id="oneTimeBonus" min="0" step="0.01" placeholder="$0.00">
+            <button id="addBonusBtn">Add</button>
+        </div>
     </div>
 
-    <div class="divider"></div>
-
-    <!-- Section 2: Overtime Multiplier and One-time Bonus -->
-    <div class="input-section">
-      <label for="overtimeMultiplier">Overtime Multiplier:</label>
-      <div class="input-multiplier">
-        <input type="number" id="overtimeMultiplier" placeholder="1.50" />
-        <button id="toggleMultiplier" onclick="toggleMultiplier()">Enable/Disable</button>
-      </div>
+    <div class="button-group">
+        <button id="startBtn">Start</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="resetBtn">Reset</button>
     </div>
 
-    <div class="input-section">
-      <label for="bonus">One-time Bonus:</label>
-      <div class="input-bonus">
-        <input type="number" id="bonus" placeholder="$100.00" />
-        <button onclick="addBonus()">Add</button>
-      </div>
+    <div id="earnings">$0.00</div>
+
+    <div class="animation-container">
+        <div class="hovering-dollar">$</div>
     </div>
 
-    <div class="divider"></div>
+    <script>
+        let earnings = 0;
+        let timer = null;
+        let isRunning = false;
+        let isOvertimeEnabled = false;
+        let baseHourlyRate = 0;
+        let startTime = null;
+        let accumulatedTime = 0;
+        let hasStartedOnce = false;
+        let hasStoppedOnce = false;
 
-    <!-- Section 3: Start, Stop, Reset buttons and Earnings -->
-    <div style="text-align: center;">
-      <button id="startButton" onclick="startTracking()">Start</button>
-      <button id="stopButton" onclick="stopTracking()" disabled>Stop</button>
-      <button id="resetButton" onclick="resetTracking()">Reset</button>
-    </div>
+        const startingAmountInput = document.getElementById('startingAmount');
+        const hourlyRateInput = document.getElementById('hourlyRate');
+        const overtimeMultiplierInput = document.getElementById('overtimeMultiplier');
+        const overtimeToggle = document.getElementById('overtimeToggle');
+        const oneTimeBonusInput = document.getElementById('oneTimeBonus');
+        const addBonusBtn = document.getElementById('addBonusBtn');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const earningsDisplay = document.getElementById('earnings');
 
-    <h2 style="text-align: center;">Amount Earned So Far:</h2>
-    <p id="earnings" class="earnings">$0.00</p>
-  </div>
-
-  <script>
-    let wagePerSecond;
-    let startTime;
-    let elapsedTime = 0;
-    let timerActive = false;
-    let requestID;
-    let totalBonus = 0;  // Store total bonus
-    let isOvertime = false;
-    let overtimeMultiplier = 1;
-    let startingAmount = 0; // Static starting amount
-    let multiplierEnabled = false;  // Track if the multiplier is enabled
-
-    function toggleMultiplier() {
-      const multiplierButton = document.getElementById('toggleMultiplier');
-      multiplierEnabled = !multiplierEnabled;  // Toggle multiplier state
-
-      if (multiplierEnabled) {
-        multiplierButton.style.backgroundColor = 'green';
-        multiplierButton.style.color = 'white';
-      } else {
-        multiplierButton.style.backgroundColor = 'lightgray';
-        multiplierButton.style.color = 'black';
-      }
-
-      updateWageWithOvertime();  // Update wage immediately when toggled
-    }
-
-    function updateWageWithOvertime() {
-      const wage = parseFloat(document.getElementById('wage').value);
-      const multiplier = parseFloat(document.getElementById('overtimeMultiplier').value);
-      
-      if (isNaN(wage) || wage <= 0) return;  // Don't proceed without a valid wage
-
-      if (multiplierEnabled && multiplier > 1) {
-        overtimeMultiplier = multiplier;
-      } else {
-        overtimeMultiplier = 1;
-      }
-
-      wagePerSecond = (wage * overtimeMultiplier) / 3600;  // Update wage with overtime multiplier
-
-      if (!timerActive) {
-        updateEarnings();  // Update immediately if not running
-      }
-    }
-
-    function startTracking() {
-      const wage = parseFloat(document.getElementById('wage').value);
-      startingAmount = parseFloat(document.getElementById('startingAmount').value) || 0;  // Static starting amount
-
-      if (isNaN(wage) || wage <= 0) {
-        alert('Please enter a valid hourly wage.');
-        return;
-      }
-
-      if (timerActive) return;
-
-      updateWageWithOvertime();  // Ensure wage per second is updated with overtime
-      startTime = Date.now() - elapsedTime;  // Account for any previous time
-      timerActive = true;
-      updateEarnings();
-
-      // Enable stop button and disable start button
-      document.getElementById('startButton').disabled = true;
-      document.getElementById('stopButton').disabled = false;
-      document.getElementById('resetButton').disabled = false;
-    }
-
-    function stopTracking() {
-      timerActive = false;
-      elapsedTime = Date.now() - startTime;
-      cancelAnimationFrame(requestID);  // Stop the animation
-
-      // Enable start button and disable stop button
-      document.getElementById('startButton').disabled = false;
-      document.getElementById('stopButton').disabled = true;
-    }
-
-    function resetTracking() {
-      timerActive = false;
-      elapsedTime = 0;
-      totalBonus = 0;
-      document.getElementById('bonus').value = '';
-      document.getElementById('earnings').innerHTML = '$0.00';
-      cancelAnimationFrame(requestID);  // Stop any ongoing updates
-
-      // Enable start button and disable stop and reset buttons
-      document.getElementById('startButton').disabled = false;
-      document.getElementById('stopButton').disabled = true;
-      document.getElementById('resetButton').disabled = true;
-    }
-
-    function addBonus() {
-      const bonusInput = parseFloat(document.getElementById('bonus').value);
-      if (!isNaN(bonusInput) && bonusInput > 0) {
-        totalBonus += bonusInput;  // Add to total bonus
-        document.getElementById('bonus').value = '';  // Clear input field
-        if (!timerActive) {
-          document.getElementById('earnings').innerHTML = `$${(totalBonus + startingAmount).toFixed(2)}`;
+        function formatCurrency(value) {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return '';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(numValue);
         }
-      }
-    }
 
-    function updateEarnings() {
-      if (!timerActive) return;  // Only update if tracking is active
+        [startingAmountInput, hourlyRateInput, oneTimeBonusInput, overtimeMultiplierInput].forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const numValue = parseFloat(this.value);
+                    if (!isNaN(numValue)) {
+                        this.value = numValue.toFixed(2);
+                        this.placeholder = formatCurrency(numValue);
+                    }
+                }
+            });
+        });
 
-      const currentTime = Date.now();
-      const elapsedSeconds = (currentTime - startTime) / 1000;
-      const earned = (elapsedSeconds * wagePerSecond + totalBonus + startingAmount).toFixed(2);
-      document.getElementById('earnings').innerHTML = `$${earned}`;
+        function getEffectiveHourlyRate() {
+            const baseRate = parseFloat(hourlyRateInput.value);
+            if (isOvertimeEnabled) {
+                const multiplier = parseFloat(overtimeMultiplierInput.value) || 1;
+                return baseRate * multiplier;
+            }
+            return baseRate;
+        }
 
-      requestID = requestAnimationFrame(updateEarnings);  // Continue updating
-    }
-  </script>
+        function updateEarnings() {
+            const effectiveHourlyRate = getEffectiveHourlyRate();
+            const perSecond = effectiveHourlyRate / 3600;
+            earnings += perSecond;
+            earningsDisplay.textContent = formatCurrency(earnings);
+        }
+
+        overtimeToggle.addEventListener('click', () => {
+            if (!overtimeMultiplierInput.value || isNaN(overtimeMultiplierInput.value) || overtimeMultiplierInput.value < 1) {
+                alert('Please enter a valid multiplier (minimum 1)');
+                return;
+            }
+            isOvertimeEnabled = !isOvertimeEnabled;
+            overtimeToggle.textContent = isOvertimeEnabled ? 'Disable' : 'Enable';
+            overtimeToggle.style.backgroundColor = isOvertimeEnabled ? '#ff4444' : '#444';
+            overtimeMultiplierInput.disabled = isOvertimeEnabled;
+        });
+
+        addBonusBtn.addEventListener('click', () => {
+            const bonusAmount = parseFloat(oneTimeBonusInput.value);
+            if (!isNaN(bonusAmount) && bonusAmount > 0) {
+                earnings += bonusAmount;
+                earningsDisplay.textContent = formatCurrency(earnings);
+                oneTimeBonusInput.value = '';
+            } else {
+                alert('Please enter a valid bonus amount.');
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!hourlyRateInput.value || isNaN(hourlyRateInput.value) || hourlyRateInput.value <= 0) {
+                alert('Please enter a valid hourly rate');
+                return;
+            }
+            
+            if (!hasStartedOnce) {
+                const startingAmount = parseFloat(startingAmountInput.value) || 0;
+                earnings = startingAmount;
+                hasStartedOnce = true;
+            }
+            
+            isRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            hourlyRateInput.disabled = true;
+            startingAmountInput.disabled = true;
+            startTime = Date.now() - (accumulatedTime * 1000);
+            
+            timer = setInterval(updateEarnings, 1000);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            clearInterval(timer);
+            accumulatedTime = (Date.now() - startTime) / 1000;
+            
+            hourlyRateInput.disabled = false;
+            startingAmountInput.disabled = false;
+
+            if (!hasStoppedOnce) {
+                startBtn.textContent = 'Resume';
+                hasStoppedOnce = true;
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            earnings = 0;
+            accumulatedTime = 0;
+            isOvertimeEnabled = false;
+            hasStartedOnce = false;
+            hasStoppedOnce = false;
+            clearInterval(timer);
+            timer = null;
+            earningsDisplay.textContent = formatCurrency(0);
+            hourlyRateInput.value = '';
+            startingAmountInput.value = '';
+            overtimeMultiplierInput.value = '';
+            oneTimeBonusInput.value = '';
+            overtimeMultiplierInput.disabled = false;
+            overtimeToggle.textContent = 'Enable';
+            overtimeToggle.style.backgroundColor = '#444';
+            hourlyRateInput.disabled = false;
+            startingAmountInput.disabled = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.textContent = 'Start';
+        });
+    </script>
 </body>
 </html>
