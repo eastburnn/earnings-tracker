@@ -150,13 +150,16 @@
         @media (max-width: 600px) {
             .input-group, .overtime-controls {
                 display: flex;
+                flex-wrap: wrap;
                 align-items: center;
                 justify-content: flex-start;
                 margin: 10px 0;
             }
             .input-group label, .overtime-controls label {
                 margin-right: 5px;
-                flex: 0 0 auto;
+                flex: 1 1 100%;
+                font-size: 14px;
+                margin-bottom: 3px;
             }
             .input-group input, .overtime-controls input {
                 width: 80px;
@@ -166,16 +169,20 @@
                 margin-right: 5px;
             }
             #overtimeToggle, #addBonusBtn {
-                width: auto;
-                padding: 5px 10px;
-                font-size: 14px;
+                width: 60px;
+                padding: 5px;
+                font-size: 12px;
                 margin-left: 5px;
             }
             .overtime-controls-wrapper {
-                padding-left: 10px;
+                padding-left: 5px;
+                padding-right: 5px;
             }
             .overtime-section {
-                padding: 15px;
+                padding: 15px 10px;
+            }
+            .overtime-controls input {
+                flex: 0 1 auto;
             }
         }
     </style>
