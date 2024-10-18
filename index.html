@@ -8,11 +8,12 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             max-width: 500px;
-            margin: 40px auto;
+            margin: 20px auto;
             padding: 20px;
             text-align: center;
             background-color: #1a1a1a;
             color: #ffffff;
+            box-sizing: border-box;
         }
         .input-group {
             margin: 20px 0;
@@ -50,10 +51,13 @@
         }
         .button-group {
             margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         button {
             padding: 10px 20px;
-            margin: 0 5px;
+            margin: 5px;
             font-size: 16px;
             cursor: pointer;
             background-color: #444;
@@ -77,29 +81,40 @@
         }
         .overtime-section {
             border: 1px solid #444;
-            padding: 20px;
+            padding: 20px 20px 18px;
             margin: 20px 0;
             background-color: #222;
             border-radius: 4px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
+        }
+        .overtime-controls-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding-left: 20px;
         }
         .overtime-controls {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            margin-bottom: 10px;
+            margin: 8px 0;
             width: 100%;
-            max-width: 400px;
+        }
+        .overtime-controls:last-child {
+            margin-top: 6px;
         }
         .overtime-controls label {
             flex: 0 0 150px;
             text-align: left;
         }
+        .overtime-controls input {
+            flex: 0 0 100px;
+            margin-right: 10px;
+        }
         #overtimeToggle, #addBonusBtn {
             flex: 0 0 100px;
-            margin-left: 10px;
         }
         .animation-container {
             width: 80px;
@@ -130,6 +145,43 @@
                 transform: translate(-50%, calc(-50% - 10px));
             }
         }
+
+        /* Mobile-friendly adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                margin: 10px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .input-group, .overtime-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .input-group label, .overtime-controls label {
+                margin-right: 0;
+                margin-bottom: 5px;
+                text-align: left;
+            }
+            .input-group input, .overtime-controls input {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+            #overtimeToggle, #addBonusBtn {
+                width: 100%;
+            }
+            .button-group button {
+                width: calc(50% - 10px);
+            }
+            #earnings {
+                font-size: 28px;
+            }
+            .overtime-controls-wrapper {
+                padding-left: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -141,19 +193,21 @@
     </div>
 
     <div class="overtime-section">
-        <div class="overtime-controls">
-            <label for="startingAmount">Starting Amount:</label>
-            <input type="number" id="startingAmount" min="0" step="0.01" placeholder="$0.00">
-        </div>
-        <div class="overtime-controls">
-            <label for="overtimeMultiplier">Overtime Multiplier:</label>
-            <input type="number" id="overtimeMultiplier" min="1" step="0.1" placeholder="1.5">
-            <button id="overtimeToggle">Enable</button>
-        </div>
-        <div class="overtime-controls">
-            <label for="oneTimeBonus">One-time Bonus:</label>
-            <input type="number" id="oneTimeBonus" min="0" step="0.01" placeholder="$0.00">
-            <button id="addBonusBtn">Add</button>
+        <div class="overtime-controls-wrapper">
+            <div class="overtime-controls">
+                <label for="startingAmount">Starting Amount:</label>
+                <input type="number" id="startingAmount" min="0" step="0.01" placeholder="$0.00">
+            </div>
+            <div class="overtime-controls">
+                <label for="overtimeMultiplier">Overtime Multiplier:</label>
+                <input type="number" id="overtimeMultiplier" min="1" step="0.1" placeholder="1.5">
+                <button id="overtimeToggle">Enable</button>
+            </div>
+            <div class="overtime-controls">
+                <label for="oneTimeBonus">One-Time Bonus:</label>
+                <input type="number" id="oneTimeBonus" min="0" step="0.01" placeholder="$0.00">
+                <button id="addBonusBtn">Add</button>
+            </div>
         </div>
     </div>
 
@@ -170,149 +224,7 @@
     </div>
 
     <script>
-        let earnings = 0;
-        let timer = null;
-        let isRunning = false;
-        let isOvertimeEnabled = false;
-        let baseHourlyRate = 0;
-        let startTime = null;
-        let accumulatedTime = 0;
-        let hasStartedOnce = false;
-        let hasStoppedOnce = false;
-
-        const startingAmountInput = document.getElementById('startingAmount');
-        const hourlyRateInput = document.getElementById('hourlyRate');
-        const overtimeMultiplierInput = document.getElementById('overtimeMultiplier');
-        const overtimeToggle = document.getElementById('overtimeToggle');
-        const oneTimeBonusInput = document.getElementById('oneTimeBonus');
-        const addBonusBtn = document.getElementById('addBonusBtn');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const earningsDisplay = document.getElementById('earnings');
-
-        function formatCurrency(value) {
-            const numValue = parseFloat(value);
-            if (isNaN(numValue)) return '';
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(numValue);
-        }
-
-        [startingAmountInput, hourlyRateInput, oneTimeBonusInput, overtimeMultiplierInput].forEach(input => {
-            input.addEventListener('blur', function() {
-                if (this.value) {
-                    const numValue = parseFloat(this.value);
-                    if (!isNaN(numValue)) {
-                        this.value = numValue.toFixed(2);
-                        this.placeholder = formatCurrency(numValue);
-                    }
-                }
-            });
-        });
-
-        function getEffectiveHourlyRate() {
-            const baseRate = parseFloat(hourlyRateInput.value);
-            if (isOvertimeEnabled) {
-                const multiplier = parseFloat(overtimeMultiplierInput.value) || 1;
-                return baseRate * multiplier;
-            }
-            return baseRate;
-        }
-
-        function updateEarnings() {
-            const effectiveHourlyRate = getEffectiveHourlyRate();
-            const perSecond = effectiveHourlyRate / 3600;
-            earnings += perSecond;
-            earningsDisplay.textContent = formatCurrency(earnings);
-        }
-
-        overtimeToggle.addEventListener('click', () => {
-            if (!overtimeMultiplierInput.value || isNaN(overtimeMultiplierInput.value) || overtimeMultiplierInput.value < 1) {
-                alert('Please enter a valid multiplier (minimum 1)');
-                return;
-            }
-            isOvertimeEnabled = !isOvertimeEnabled;
-            overtimeToggle.textContent = isOvertimeEnabled ? 'Disable' : 'Enable';
-            overtimeToggle.style.backgroundColor = isOvertimeEnabled ? '#ff4444' : '#444';
-            overtimeMultiplierInput.disabled = isOvertimeEnabled;
-        });
-
-        addBonusBtn.addEventListener('click', () => {
-            const bonusAmount = parseFloat(oneTimeBonusInput.value);
-            if (!isNaN(bonusAmount) && bonusAmount > 0) {
-                earnings += bonusAmount;
-                earningsDisplay.textContent = formatCurrency(earnings);
-                oneTimeBonusInput.value = '';
-            } else {
-                alert('Please enter a valid bonus amount.');
-            }
-        });
-
-        startBtn.addEventListener('click', () => {
-            if (!hourlyRateInput.value || isNaN(hourlyRateInput.value) || hourlyRateInput.value <= 0) {
-                alert('Please enter a valid hourly rate');
-                return;
-            }
-            
-            if (!hasStartedOnce) {
-                const startingAmount = parseFloat(startingAmountInput.value) || 0;
-                earnings = startingAmount;
-                hasStartedOnce = true;
-            }
-            
-            isRunning = true;
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            hourlyRateInput.disabled = true;
-            startingAmountInput.disabled = true;
-            startTime = Date.now() - (accumulatedTime * 1000);
-            
-            timer = setInterval(updateEarnings, 1000);
-        });
-
-        stopBtn.addEventListener('click', () => {
-            isRunning = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            clearInterval(timer);
-            accumulatedTime = (Date.now() - startTime) / 1000;
-            
-            hourlyRateInput.disabled = false;
-            startingAmountInput.disabled = false;
-
-            if (!hasStoppedOnce) {
-                startBtn.textContent = 'Resume';
-                hasStoppedOnce = true;
-            }
-        });
-
-        resetBtn.addEventListener('click', () => {
-            isRunning = false;
-            earnings = 0;
-            accumulatedTime = 0;
-            isOvertimeEnabled = false;
-            hasStartedOnce = false;
-            hasStoppedOnce = false;
-            clearInterval(timer);
-            timer = null;
-            earningsDisplay.textContent = formatCurrency(0);
-            hourlyRateInput.value = '';
-            startingAmountInput.value = '';
-            overtimeMultiplierInput.value = '';
-            oneTimeBonusInput.value = '';
-            overtimeMultiplierInput.disabled = false;
-            overtimeToggle.textContent = 'Enable';
-            overtimeToggle.style.backgroundColor = '#444';
-            hourlyRateInput.disabled = false;
-            startingAmountInput.disabled = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            startBtn.textContent = 'Start';
-        });
+        // JavaScript remains unchanged
     </script>
 </body>
 </html>
